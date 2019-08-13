@@ -21,6 +21,13 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 export default function Podcast({ navigation }) {
+  const currentEpisode = useSelector(state =>
+    state.player.podcast
+      ? state.player.podcast.tracks.find(
+          episode => episode.id === state.player.current
+        )
+      : null
+  );
   const dispatch = useDispatch();
   const podcast = navigation.getParam('podcast');
   function handleBack() {
@@ -50,7 +57,9 @@ export default function Podcast({ navigation }) {
         keyExtractor={episode => String(episode.id)}
         renderItem={({ item: episode }) => (
           <Episode onPress={() => handlePlay(episode.id)}>
-            <Title>{episode.title}</Title>
+            <Title active={currentEpisode && currentEpisode.id === episode.id}>
+              {episode.title}
+            </Title>
             <Author>{episode.artist}</Author>
           </Episode>
         )}

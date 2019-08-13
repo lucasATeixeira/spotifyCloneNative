@@ -1,5 +1,6 @@
 import React from 'react';
-import { View } from 'react-native';
+import { useSelector, useDispatch } from 'react-redux';
+import PlayerActions from '../../store/ducks/player';
 import {
   Container,
   CoverBackground,
@@ -12,29 +13,53 @@ import {
 } from './styles';
 
 export default function Player() {
-  return (
-    <Container>
-      <CoverBackground
-        source={{
-          uri: 'https://s3-sa-east-1.amazonaws.com/gonative/cover1.png',
-        }}
-      />
-      <EpisodeInfo>
-        <Title>Papercut</Title>
-        <Author>Linkin Park</Author>
-      </EpisodeInfo>
+  const dispatch = useDispatch();
 
-      <Controls>
-        <ControlButton onPress={() => {}}>
-          <ControlIcon name="skip-previous" />
-        </ControlButton>
-        <ControlButton onPress={() => {}}>
-          <ControlIcon name="play-circle-filled" />
-        </ControlButton>
-        <ControlButton onPress={() => {}}>
-          <ControlIcon name="skip-next" />
-        </ControlButton>
-      </Controls>
-    </Container>
+  const player = useSelector(state => state.player);
+
+  const currentEpisode = useSelector(state =>
+    state.player.podcast
+      ? state.player.podcast.tracks.find(
+          episode => episode.id === state.player.current
+        )
+      : null
+  );
+
+  return (
+    player.current && (
+      <Container>
+        <CoverBackground
+          source={{
+            uri: currentEpisode.artwork,
+          }}
+        />
+        <EpisodeInfo>
+          <Title>{currentEpisode.title}</Title>
+          <Author>{currentEpisode.artist}</Author>
+        </EpisodeInfo>
+
+        <Controls>
+          <ControlButton onPress={() => dispatch(PlayerActions.prev())}>
+            <ControlIcon name="skip-previous" />
+          </ControlButton>
+          <ControlButton
+            onPress={
+              player.playing
+                ? () => dispatch(PlayerActions.pause())
+                : () => dispatch(PlayerActions.play())
+            }
+          >
+            <ControlIcon
+              name={
+                player.playing ? 'pause-circle-filled' : 'play-circle-filled'
+              }
+            />
+          </ControlButton>
+          <ControlButton onPress={() => dispatch(PlayerActions.next())}>
+            <ControlIcon name="skip-next" />
+          </ControlButton>
+        </Controls>
+      </Container>
+    )
   );
 }
